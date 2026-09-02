@@ -1,11 +1,12 @@
-# PDF Form + PNG OCR Translator (Japanese)
+# PDF Form + PNG OCR + DOCX Translator (Japanese)
 
 This repository provides Python scripts to:
 
 1. Translate **filled PDF form text fields only** (not full PDF page content) to Japanese.
 2. OCR text from PNG images and translate that text to Japanese.
 3. Batch-process multiple PNG files.
-4. Use a GUI file picker (Explorer/Finder) for no-command-line runs.
+4. Translate DOCX text content (paragraphs + tables) to Japanese.
+5. Use a GUI file picker (Explorer/Finder) for no-command-line runs.
 
 ## Requirements
 
@@ -44,20 +45,11 @@ sudo apt-get install -y tesseract-ocr
 python translate_pdf_form_fields_to_japanese.py input.pdf output_ja.pdf
 ```
 
-Optional:
-- `--source-lang auto`
-- `--target-lang ja`
-- `--log-file translation_log.txt`
-
 ### 2) Single PNG OCR + translate
 
 ```bash
 python translate_png_ocr_to_japanese.py input.png --print-ocr --print-translation
 ```
-
-Optional:
-- `--save-ocr out_ocr.txt`
-- `--save-translation out_ja.txt`
 
 ### 3) Batch PNG OCR + translate
 
@@ -69,7 +61,13 @@ Outputs per image:
 - `<name>.ocr.txt`
 - `<name>.ja.txt`
 
-### 4) GUI mode (file explorer dialogs)
+### 4) DOCX translate -> Japanese
+
+```bash
+python translate_docx_to_japanese.py input.docx output_ja.docx
+```
+
+### 5) GUI mode (file explorer dialogs)
 
 ```bash
 python run_gui.py
@@ -78,6 +76,13 @@ python run_gui.py
 Then choose:
 - **Single PNG (pick file)**
 - **Batch PNGs (pick folders)**
+- **Translate DOCX (pick file)**
+
+### 6) Windows double-click launcher
+
+Double-click:
+
+- `run_gui.bat`
 
 ## Notes
 
