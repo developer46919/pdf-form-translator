@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Translate ONLY filled text form fields in a PDF into Japanese.
+Translate ONLY filled text form fields in a PDF into any target language.
 
 Usage:
   python translate_pdf_form_fields_to_japanese.py input.pdf output_ja.pdf
@@ -14,6 +14,8 @@ from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, TextStringObject, BooleanObject
 from deep_translator import GoogleTranslator
 
+from translator_core import is_already_target_script
+
 
 def normalize_field_value(value: Any) -> str:
     if value is None:
@@ -21,24 +23,11 @@ def normalize_field_value(value: Any) -> str:
     return str(value).strip()
 
 
-def is_probably_japanese(text: str) -> bool:
-    for ch in text:
-        code = ord(ch)
-        if (
-            0x3040 <= code <= 0x309F
-            or 0x30A0 <= code <= 0x30FF
-            or 0x4E00 <= code <= 0x9FFF
-            or 0xFF66 <= code <= 0xFF9D
-        ):
-            return True
-    return False
-
-
-def translate_text_to_japanese(text: str, translator: GoogleTranslator) -> str:
+def translate_field_text(text: str, translator: GoogleTranslator, target_lang: str) -> str:
     text = text.strip()
     if not text:
         return text
-    if is_probably_japanese(text):
+    if is_already_target_script(text, target_lang):
         return text
     return translator.translate(text)
 
@@ -50,12 +39,12 @@ def get_all_form_fields(reader: PdfReader) -> Dict[str, Any]:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Translate filled PDF form text fields to Japanese."
+        description="Translate filled PDF form text fields to any target language."
     )
     parser.add_argument("input_pdf", help="Path to input PDF")
     parser.add_argument("output_pdf", help="Path to output translated PDF")
     parser.add_argument("--source-lang", default="auto")
-    parser.add_argument("--target-lang", default="ja")
+    parser.add_argument("--target-lang", default="ja", help="Target language code, e.g. ja, es, fr, de")
     parser.add_argument("--log-file", default="translation_log.txt")
     args = parser.parse_args()
 
@@ -103,7 +92,7 @@ def main():
             continue
 
         try:
-            translated = translate_text_to_japanese(value, translator)
+            translated = translate_field_text(value, translator, args.target_lang)
         except Exception as e:
             print(f"[WARN] Translation failed for field '{field_name}': {e}")
             translated = value

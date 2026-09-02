@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OCR a PNG image and translate extracted text to Japanese.
+OCR a PNG image and translate extracted text to any target language.
 
 Usage:
   python translate_png_ocr_to_japanese.py input.png --print-ocr --print-translation
@@ -9,30 +9,15 @@ Usage:
 import argparse
 from pathlib import Path
 
-from PIL import Image
-import pytesseract
-from deep_translator import GoogleTranslator
-
-
-def ocr_image(image_path: Path, ocr_lang: str = "eng") -> str:
-    image = Image.open(image_path)
-    text = pytesseract.image_to_string(image, lang=ocr_lang)
-    return text.strip()
-
-
-def translate_text(text: str, source_lang: str = "auto", target_lang: str = "ja") -> str:
-    if not text.strip():
-        return ""
-    translator = GoogleTranslator(source=source_lang, target=target_lang)
-    return translator.translate(text)
+from translator_core import ocr_image, translate_text
 
 
 def main():
-    parser = argparse.ArgumentParser(description="OCR PNG and translate text to Japanese")
+    parser = argparse.ArgumentParser(description="OCR PNG and translate text to any language")
     parser.add_argument("input_png", help="Path to PNG image")
     parser.add_argument("--ocr-lang", default="eng", help="Tesseract OCR language, e.g. eng")
     parser.add_argument("--source-lang", default="auto")
-    parser.add_argument("--target-lang", default="ja")
+    parser.add_argument("--target-lang", default="ja", help="Target language code, e.g. ja, es, fr, de")
     parser.add_argument("--save-ocr", default=None, help="Optional path to save OCR text")
     parser.add_argument("--save-translation", default=None, help="Optional path to save translated text")
     parser.add_argument("--print-ocr", action="store_true", help="Print OCR text")
@@ -51,7 +36,7 @@ def main():
         print(ocr_text)
 
     if args.print_translation:
-        print("=== TRANSLATED (JA) ===")
+        print(f"=== TRANSLATED ({args.target_lang}) ===")
         print(translated)
 
     if args.save_ocr:
