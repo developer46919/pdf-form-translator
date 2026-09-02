@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Translate DOCX text content to Japanese.
+Translate DOCX text content to any target language.
 
 - Translates paragraph text
 - Translates table cell text
@@ -16,25 +16,14 @@ from pathlib import Path
 from deep_translator import GoogleTranslator
 from docx import Document
 
-
-def is_probably_japanese(text: str) -> bool:
-    for ch in text:
-        code = ord(ch)
-        if (
-            0x3040 <= code <= 0x309F
-            or 0x30A0 <= code <= 0x30FF
-            or 0x4E00 <= code <= 0x9FFF
-            or 0xFF66 <= code <= 0xFF9D
-        ):
-            return True
-    return False
+from translator_core import is_already_target_script
 
 
-def translate_text(text: str, translator: GoogleTranslator) -> str:
+def translate_text(text: str, translator: GoogleTranslator, target_lang: str) -> str:
     stripped = text.strip()
     if not stripped:
         return text
-    if is_probably_japanese(stripped):
+    if is_already_target_script(stripped, target_lang):
         return text
     return translator.translate(text)
 
@@ -46,7 +35,7 @@ def translate_docx(input_path: Path, output_path: Path, source_lang: str = "auto
     # Paragraphs
     for para in doc.paragraphs:
         if para.text and para.text.strip():
-            translated = translate_text(para.text, translator)
+            translated = translate_text(para.text, translator, target_lang)
             para.text = translated
 
     # Tables
@@ -55,18 +44,18 @@ def translate_docx(input_path: Path, output_path: Path, source_lang: str = "auto
             for cell in row.cells:
                 txt = cell.text
                 if txt and txt.strip():
-                    translated = translate_text(txt, translator)
+                    translated = translate_text(txt, translator, target_lang)
                     cell.text = translated
 
     doc.save(str(output_path))
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Translate DOCX text to Japanese")
+    parser = argparse.ArgumentParser(description="Translate DOCX text to any language")
     parser.add_argument("input_docx", help="Path to input DOCX")
     parser.add_argument("output_docx", help="Path to output translated DOCX")
     parser.add_argument("--source-lang", default="auto")
-    parser.add_argument("--target-lang", default="ja")
+    parser.add_argument("--target-lang", default="ja", help="Target language code, e.g. ja, es, fr, de")
     args = parser.parse_args()
 
     input_path = Path(args.input_docx)
